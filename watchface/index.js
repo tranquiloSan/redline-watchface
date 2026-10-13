@@ -5,12 +5,12 @@
  * over a 270° scale (0 = bottom-left, 60 = bottom-right) and "redlines" in the
  * last 10 minutes. One rotation per hour → RPH.
  *   GEAR box  = hour        Shift lights = one LED per 10 s of the minute
- *   FUEL      = battery     TEMP         = current weather temperature
+ *   FUEL      = battery     TEMP         = current temp (needle) + today's low→high (band)
  *   ODO       = steps       bottom line  = date + heart rate
  */
 import ui from '@zos/ui'
 import { getScene, SCENE_AOD } from '@zos/app'
-import { Time, Battery, Step } from '@zos/sensor'
+import { Time, Battery, Step, Weather } from '@zos/sensor'
 
 // ---------- layout (466 design px) ----------
 const C = 233
@@ -20,6 +20,11 @@ const FUEL = { x: 128, y: 238 }
 const TEMP = { x: 338, y: 238 }
 const MINI_START = -110
 const MINI_END = 110
+const TEMP_MIN = -10 // °C at the C end of the TEMP gauge
+const TEMP_MAX = 35 // °C at the H end
+
+// box/radius for the ARC widget drawing today's temperature range on the TEMP gauge
+const TEMP_ARC = { x: 338 - 37, y: 238 - 37, w: 74, h: 74, radius: 36, line_width: 5, color: 0xffb020 }
 
 const NORMAL = ui.show_level.ONLY_NORMAL
 const AOD = ui.show_level.ONAL_AOD
@@ -38,6 +43,7 @@ const w = {} // widgets
 const time = new Time()
 const battery = new Battery()
 const step = new Step()
+const weather = new Weather()
 
 function set(widget, key, prop, value) {
   if (last[key] === value) return
@@ -113,9 +119,55 @@ function updateSteps() {
   }
 }
 
+function tempAngle(t) {
+  const f = Math.max(0, Math.min(1, (t - TEMP_MIN) / (TEMP_MAX - TEMP_MIN)))
+  return MINI_START + (MINI_END - MINI_START) * f
+}
+
+// Current temperature: read back from the system-bound number widget
+function readCurrentTemp() {
+  try {
+    const t = parseInt(String(w.tempText.getProperty(ui.prop.TEXT)), 10)
+    return isNaN(t) ? null : t
+  } catch (e) {
+    return null
+  }
+}
+
+// Today's low/high from the forecast
+function readToday() {
+  try {
+    const f = weather.getForecastWeather()
+    const d = f && f.forecastData && f.forecastData.data && f.forecastData.data[0]
+    if (d && typeof d.low === 'number' && typeof d.high === 'number') return d
+  } catch (e) {}
+  return null
+}
+
+function updateTemp() {
+  const cur = readCurrentTemp()
+  set(w.tempNeedle, 'tempNeedleVis', ui.prop.VISIBLE, cur !== null)
+  if (cur !== null) set(w.tempNeedle, 'tempNeedle', ui.prop.ANGLE, Math.round(tempAngle(cur)))
+
+  const today = readToday()
+  set(w.tempBand, 'tempBandVis', ui.prop.VISIBLE, today !== null)
+  if (today !== null) {
+    const key = today.low + '/' + today.high
+    if (last.tempBand !== key) {
+      last.tempBand = key
+      // ARC angles: 0° = 3 o'clock, so shift our 12-o'clock-based angles by -90
+      w.tempBand.setProperty(ui.prop.MORE, Object.assign({}, TEMP_ARC, {
+        start_angle: Math.round(tempAngle(today.low)) - 90,
+        end_angle: Math.max(Math.round(tempAngle(today.high)) - 90, Math.round(tempAngle(today.low)) - 88),
+      }))
+    }
+  }
+}
+
 function onMinute() {
   updateNeedle()
   updateGear()
+  updateTemp()
 }
 
 function updateAll() {
@@ -157,9 +209,9 @@ WatchFace({
     w.fuelNeedle = rotatingImg(img('mini_needle'), 5, 40, FUEL.x, FUEL.y, NORMAL)
     create(ui.widget.TEXT_IMG, {
       x: FUEL.x - 40,
-      y: 262,
+      y: 264,
       w: 80,
-      h: 22,
+      h: 26,
       font_array: digits('small'),
       type: ui.data_type.BATTERY,
       unit_en: img('small/percent'),
@@ -170,24 +222,16 @@ WatchFace({
       show_level: NORMAL,
     })
 
-    // --- TEMP gauge (weather, system-bound) ---
-    create(ui.widget.IMG_POINTER, {
-      src: img('mini_needle'),
-      x: 5,
-      y: 40,
-      center_x: TEMP.x,
-      center_y: TEMP.y,
-      start_angle: MINI_START,
-      end_angle: MINI_END,
-      type: ui.data_type.WEATHER_CURRENT,
-      invalid_visible: false,
-      show_level: NORMAL,
-    })
-    create(ui.widget.TEXT_IMG, {
+    // --- TEMP gauge: amber band = today's low→high, needle = current temp ---
+    w.tempBand = create(ui.widget.ARC, Object.assign({}, TEMP_ARC, { start_angle: -200, end_angle: -199, show_level: NORMAL }))
+    w.tempBand.setProperty(ui.prop.VISIBLE, false)
+    w.tempNeedle = rotatingImg(img('mini_needle'), 5, 40, TEMP.x, TEMP.y, NORMAL)
+    w.tempNeedle.setProperty(ui.prop.VISIBLE, false)
+    w.tempText = create(ui.widget.TEXT_IMG, {
       x: TEMP.x - 40,
-      y: 262,
+      y: 264,
       w: 80,
-      h: 22,
+      h: 26,
       font_array: digits('small'),
       type: ui.data_type.WEATHER_CURRENT,
       unit_en: img('small/deg'),
@@ -221,28 +265,28 @@ WatchFace({
     }
 
     // --- date + heart rate (normal) ---
-    w.week = create(ui.widget.IMG, { x: 128, y: 404, src: img('date/w1'), show_level: NORMAL })
+    w.week = create(ui.widget.IMG, { x: 120, y: 402, src: img('date/w1'), show_level: NORMAL })
     w.day = create(ui.widget.TEXT_IMG, {
-      x: 176, y: 404, w: 30, h: 24,
+      x: 176, y: 402, w: 32, h: 28,
       font_array: digits('amber'), text: '1', h_space: 1,
       align_h: ui.align.CENTER_H, show_level: NORMAL,
     })
-    w.month = create(ui.widget.IMG, { x: 208, y: 404, src: img('date/m1'), show_level: NORMAL })
+    w.month = create(ui.widget.IMG, { x: 214, y: 402, src: img('date/m1'), show_level: NORMAL })
     create(ui.widget.TEXT_IMG, {
-      x: 294, y: 404, w: 44, h: 24,
+      x: 302, y: 402, w: 48, h: 28,
       font_array: digits('amber'), type: ui.data_type.HEART,
       invalid_image: img('amber/none'), h_space: 1,
       align_h: ui.align.LEFT, show_level: NORMAL,
     })
 
     // --- date (always-on, centred) ---
-    w.weekAod = create(ui.widget.IMG, { x: 169, y: 404, src: img('date/w1'), show_level: AOD })
+    w.weekAod = create(ui.widget.IMG, { x: 161, y: 402, src: img('date/w1'), show_level: AOD })
     w.dayAod = create(ui.widget.TEXT_IMG, {
-      x: 217, y: 404, w: 30, h: 24,
+      x: 217, y: 402, w: 32, h: 28,
       font_array: digits('amber'), text: '1', h_space: 1,
       align_h: ui.align.CENTER_H, show_level: AOD,
     })
-    w.monthAod = create(ui.widget.IMG, { x: 249, y: 404, src: img('date/m1'), show_level: AOD })
+    w.monthAod = create(ui.widget.IMG, { x: 255, y: 402, src: img('date/m1'), show_level: AOD })
 
     // --- main needle + hub (on top) ---
     w.needle = rotatingImg(img('needle'), 14, 210, C, C, NORMAL)

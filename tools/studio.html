@@ -29,7 +29,7 @@ function dial(aod){
   const dim=aod?0.45:1;
   if(!aod) b+=`<rect width="466" height="466" fill="#000"/><circle cx="${C}" cy="${C}" r="233" fill="url(#dg)"/>`;
   else b+=`<rect width="466" height="466" fill="#000"/>`;
-  b+=`<path d="${arc(C,C,221,ang(50),ang(60))}" stroke="${COL.red}" stroke-width="${aod?3:10}" fill="none" opacity="${dim}"/>`;
+  b+=`<path d="${arc(C,C,221,ang(50),ang(60))}" stroke="${COL.red}" stroke-width="${aod?6:10}" fill="none" opacity="${aod?0.85:1}"/>`;
   if(!aod) b+=`<path d="${arc(C,C,227,A0,A0+SWEEP)}" stroke="${COL.track}" stroke-width="1.5" fill="none"/>`;
   for(let i=0;i<=60;i++){
     const a=ang(i), major=i%10===0, mid=i%5===0;
@@ -40,32 +40,32 @@ function dial(aod){
   }
   for(let n=0;n<=6;n++){
     const [x,y]=pt(C,C,172,ang(n*10));
-    b+=text(x,y+12,n,{size:36,weight:700,italic:true,fill:n>=5?COL.redTxt:'#fff'}).replace('<text','<text opacity="'+dim+'"');
+    b+=text(x,y+13,n,{size:40,weight:700,italic:true,fill:n>=5?COL.redTxt:'#fff'}).replace('<text','<text opacity="'+(n>=5&&aod?0.85:dim)+'"');
   }
-  b+=text(C,118,'× 10 MIN · RPH',{size:15,ls:2}).replace('<text','<text opacity="'+dim+'"');
+  b+=text(C,118,'× 10 MIN · RPH',{size:17,ls:2}).replace('<text','<text opacity="'+dim+'"');
   // gear box
   b+=`<rect x="${C-46}" y="276" width="92" height="76" rx="10" fill="${aod?'none':'#111316'}" stroke="${aod?'#555':COL.needle}" stroke-width="2"/>`;
-  b+=text(C,292,'GEAR',{size:12,ls:2});
+  b+=text(C,293,'GEAR',{size:14,ls:2});
   if(!aod){
     // mini gauges
-    const g=(cx,cy,l0,l1,title,zones)=>{
+    const g=(cx,cy,l0,l1,title,zones,lcol=[COL.muted,COL.muted])=>{
       let s=`<path d="${arc(cx,cy,GR,GA0,GA1)}" stroke="${COL.track}" stroke-width="5" fill="none"/>`;
       zones.forEach(([f0,f1,c])=>s+=`<path d="${arc(cx,cy,GR,GA0+220*f0,GA0+220*f1)}" stroke="${c}" stroke-width="5" fill="none"/>`);
       const [lx0,ly0]=pt(cx,cy,GR+11,GA0-6),[lx1,ly1]=pt(cx,cy,GR+11,GA1+6);
-      s+=text(lx0,ly0+5,l0)+text(lx1,ly1+5,l1);
-      s+=text(cx,cy+22,title,{size:12,ls:1.5});
+      s+=text(lx0,ly0+6,l0,{size:16,fill:lcol[0]})+text(lx1,ly1+6,l1,{size:16,fill:lcol[1]});
+      s+=text(cx,cy+23,title,{size:14,ls:1.5});
       return s;
     };
     b+=g(...GAUGES.fuel,'E','F','FUEL',[]);
-    b+=g(...GAUGES.temp,'C','H','TEMP',[[0,.25,'#3d8bff'],[.8,1,COL.red]]);
+    b+=g(...GAUGES.temp,'C','H','TEMP',[],['#3d8bff',COL.redTxt]);
     // shift light sockets
     for(let i=0;i<6;i++) b+=`<circle cx="${C-65+i*26}" cy="142" r="7.5" fill="#1c1e22" stroke="#2c2f34" stroke-width="1"/>`;
     // odometer boxes
     const x0=C-(6*22-2)/2, y0=364;
     for(let i=0;i<6;i++) b+=`<rect x="${x0+i*22}" y="${y0}" width="20" height="28" rx="3" fill="${i===5?'#e9eaec':'#1b1d21'}" stroke="#2e3137"/>`;
-    b+=text(x0-8,y0+19,'ODO',{size:12,anchor:'end',ls:1.5});
+    b+=text(x0-8,y0+20,'ODO',{size:14,anchor:'end',ls:1.5});
     // heart icon for HR
-    b+=heart(272,406,18,COL.amber);
+    b+=heart(279,405,20,COL.amber);
   }
   const defs=`<radialGradient id="dg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#15171a"/><stop offset="100%" stop-color="#000"/></radialGradient>`;
   return svg(466,466,b,defs);
@@ -115,18 +115,18 @@ for(let l=0;l<=20;l++) R[`fuel/${l}`]=()=>fuelFill(l);
 for(let n=0;n<=6;n++) R[`lights/${n}`]=()=>lights(n);
 for(let d=0;d<10;d++){
   R[`gear/${d}`]=()=>glyph(30,50,d,{size:54,weight:700,fill:'#fff',base:44});
-  R[`odo/${d}`]=()=>glyph(20,28,d,{size:22,weight:700,fill:'#e9eaec',base:22});
-  R[`odo_last/${d}`]=()=>glyph(20,28,d,{size:22,weight:700,fill:'#000',base:22});
-  R[`small/${d}`]=()=>glyph(11,22,d,{size:20,weight:700,fill:'#fff',base:18});
-  R[`amber/${d}`]=()=>glyph(12,24,d,{size:22,weight:600,fill:COL.amber,base:20});
+  R[`odo/${d}`]=()=>glyph(20,28,d,{size:25,weight:700,fill:'#e9eaec',base:22});
+  R[`odo_last/${d}`]=()=>glyph(20,28,d,{size:25,weight:700,fill:'#000',base:22});
+  R[`small/${d}`]=()=>glyph(13,26,d,{size:24,weight:700,fill:'#fff',base:21});
+  R[`amber/${d}`]=()=>glyph(14,28,d,{size:26,weight:600,fill:COL.amber,base:23});
 }
-R['small/percent']=()=>glyph(12,22,'%',{size:18,weight:700,fill:'#fff',base:18});
-R['small/deg']=()=>glyph(8,22,'°',{size:20,weight:700,fill:'#fff',base:18});
-R['small/minus']=()=>glyph(8,22,'-',{size:20,weight:700,fill:'#fff',base:18});
-R['small/none']=()=>glyph(22,22,'--',{size:20,weight:700,fill:'#fff',base:18});
-R['amber/none']=()=>glyph(24,24,'--',{size:22,weight:600,fill:COL.amber,base:20});
-['MON','TUE','WED','THU','FRI','SAT','SUN'].forEach((s,i)=>R[`date/w${i+1}`]=()=>glyph(46,24,s,{size:22,weight:600,fill:COL.amber,base:20,ls:2}));
-['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'].forEach((s,i)=>R[`date/m${i+1}`]=()=>glyph(46,24,s,{size:22,weight:600,fill:COL.amber,base:20,ls:2}));
+R['small/percent']=()=>glyph(14,26,'%',{size:21,weight:700,fill:'#fff',base:21});
+R['small/deg']=()=>glyph(9,26,'°',{size:24,weight:700,fill:'#fff',base:21});
+R['small/minus']=()=>glyph(9,26,'-',{size:24,weight:700,fill:'#fff',base:21});
+R['small/none']=()=>glyph(26,26,'--',{size:24,weight:700,fill:'#fff',base:21});
+R['amber/none']=()=>glyph(28,28,'--',{size:26,weight:600,fill:COL.amber,base:23});
+['MON','TUE','WED','THU','FRI','SAT','SUN'].forEach((s,i)=>R[`date/w${i+1}`]=()=>glyph(50,28,s,{size:26,weight:600,fill:COL.amber,base:23,ls:1}));
+['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'].forEach((s,i)=>R[`date/m${i+1}`]=()=>glyph(50,28,s,{size:26,weight:600,fill:COL.amber,base:23,ls:1}));
 
 window.ASSETS=Object.keys(R);
 window.renderAsset=name=>{document.getElementById('stage').innerHTML=R[name]();};
