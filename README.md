@@ -2,7 +2,10 @@
 
 This is a custom watch face for the **Amazfit Active 3 Premium** (466×466 round screen, Zepp OS 5+). It also works on other round Zepp OS watches with API level 3.0 or higher.
 
-![preview](docs/preview.png)
+<p>
+  <img src="docs/preview.png" alt="Redline watchface" width="360">
+  <img src="docs/preview_aod.png" alt="Redline always-on screen" width="360">
+</p>
 
 | Element | Shows |
 |---|---|
