@@ -57,7 +57,7 @@ function dial(aod){
       return s;
     };
     b+=g(...GAUGES.fuel,'E','F','FUEL',[]);
-    b+=g(...GAUGES.temp,'','','TEMP',[]); // ends: live low/high numbers
+    b+=g(...GAUGES.temp,'','','TEMP',[[0,.25,'#3d8bff'],[.8,1,COL.red]]); // ends: live low/high numbers
     // shift light sockets
     for(let i=0;i<6;i++) b+=`<circle cx="${C-65+i*26}" cy="142" r="7.5" fill="#1c1e22" stroke="#2c2f34" stroke-width="1"/>`;
     // odometer boxes
