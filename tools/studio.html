@@ -77,13 +77,13 @@ function heart(x,y,s,c){ // top-left x,y, size s
   return `<path transform="translate(${x} ${y}) scale(${k})" d="M12 21s-7.5-4.6-10-9.3C.4 8.5 2.2 4.5 6 4.5c2.2 0 3.6 1.2 4.5 2.6h3C14.4 5.7 15.8 4.5 18 4.5c3.8 0 5.6 4 4 7.2C19.5 16.4 12 21 12 21z" fill="${c}"/>`;
 }
 
-// ---------- warning lamps: alarm (amber), stopwatch (green), timer (blue) ----------
+// ---------- warning lamps: alarm (amber), timer (blue), stopwatch (green) ----------
 const LAMP_X=[193,233,273], LAMP_Y=186;
 const at=(cx,cy,s,body)=>`<g transform="translate(${cx-s/2} ${cy-s/2}) scale(${s/24})">${body}</g>`;
 const bell=(cx,cy,s,c)=>at(cx,cy,s,`<path d="M12 2.5a6.5 6.5 0 0 0-6.5 6.5v4.2L3.2 17h17.6l-2.3-3.8V9A6.5 6.5 0 0 0 12 2.5z" fill="${c}"/><circle cx="12" cy="20" r="2.4" fill="${c}"/>`);
 const stopwatch=(cx,cy,s,c)=>at(cx,cy,s,`<rect x="9.5" y="1" width="5" height="3" rx="1" fill="${c}"/><circle cx="12" cy="14" r="8" fill="none" stroke="${c}" stroke-width="2.6"/><path d="M12 14V9.5" stroke="${c}" stroke-width="2.6" stroke-linecap="round"/>`);
 const hourglass=(cx,cy,s,c)=>at(cx,cy,s,`<path d="M5 2h14v2.5c0 3-3.2 5.6-5 7.5 1.8 1.9 5 4.5 5 7.5V22H5v-2.5c0-3 3.2-5.6 5-7.5C8.2 10.1 5 7.5 5 4.5z" fill="${c}"/>`);
-const LAMPS=[['alarm',bell,COL.amber],['stopwatch',stopwatch,COL.green],['timer',hourglass,COL.blue]];
+const LAMPS=[['alarm',bell,COL.amber],['timer',hourglass,COL.blue],['stopwatch',stopwatch,COL.green]];
 function litLamp(fn,c){ // 40x40, icon centred
   return svg(40,40,`<g filter="url(#lg)">${fn(20,20,24,c)}</g>`,ledGlow);
 }

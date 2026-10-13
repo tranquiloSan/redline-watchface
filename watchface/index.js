@@ -7,7 +7,7 @@
  *   GEAR box  = hour        Shift lights = one LED per 10 s of the minute
  *   FUEL      = battery     TEMP         = current temp within today's low…high
  *   ODO       = steps       bottom line  = date + heart rate
- *   Warning lamps = alarm set / stopwatch holds a time / timer running.
+ *   Warning lamps = alarm set / timer running / stopwatch holds a time.
  *   While an alarm is set its time replaces the RPH label.
  *
  * If build() runs in the always-on (AOD) scene it creates only the AOD layer;
@@ -196,14 +196,14 @@ function buildLamps(L) {
   // holds a time (running or paused) and disappears once it is reset.
   const sw = img('lamp/stopwatch')
   create(ui.widget.TEXT_IMG, {
-    x: LAMP_X[1] + 20 - 60, y: LAMP_Y - 20, w: 60, h: 40,
+    x: LAMP_X[2] + 20 - 60, y: LAMP_Y - 20, w: 60, h: 40,
     font_array: digits('blank'), type: ui.data_type.STOP_WATCH,
     unit_en: sw, unit_sc: sw, unit_tc: sw, invalid_image: img('blank/0'),
     h_space: 0, align_h: ui.align.RIGHT, show_level: L,
   })
   // timer: frame 0 is empty, every other frame is the lit lamp
   create(ui.widget.IMG_LEVEL, {
-    ...at(2), image_array: lit('timer'), image_length: 100,
+    ...at(1), image_array: lit('timer'), image_length: 100,
     type: ui.data_type.COUNT_DOWN, show_level: L,
   })
 }
