@@ -1,0 +1,7 @@
+dist/
+node_modules/
+*.zab
+*.zpk
+.nix-npm/
+result
+.direnv/
