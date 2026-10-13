@@ -15,6 +15,7 @@
 import ui from '@zos/ui'
 import { getScene, SCENE_AOD } from '@zos/app'
 import { Time, Battery, Step } from '@zos/sensor'
+import { log as zlog } from '@zos/utils'
 
 // ---------- layout (466 design px) ----------
 const C = 233
@@ -33,7 +34,8 @@ const AOD = SL.ONAL_AOD !== undefined ? SL.ONAL_AOD : SL.ONLY_AOD !== undefined 
 const img = (p) => 'images/' + p + '.png'
 const digits = (dir) => Array.from({ length: 10 }, (_, i) => img(dir + '/' + i))
 const pad2 = (n) => (n < 10 ? '0' : '') + n
-const log = (...a) => console.log('[redline]', ...a)
+const logger = zlog.getLogger('redline')
+const log = (...a) => logger.log('[redline] ' + a.join(' '))
 
 // ---------- state ----------
 let isAod = false
