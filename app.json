@@ -6,7 +6,7 @@
     "appType": "watchface",
     "version": { "code": 1, "name": "1.0.0" },
     "icon": "icon.png",
-    "vender": "david",
+    "vender": "tranquiloSan",
     "description": "Tachometer-style watch face: the needle revs through each hour (RPH), the gear shows the hour."
   },
   "permissions": ["data:user.hd.step", "data:user.hd.heart_rate"],

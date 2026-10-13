@@ -254,7 +254,6 @@ function buildNormal() {
 WatchFace({
   build() {
     isAod = getScene() === SCENE_AOD
-    log('build, aod =', isAod, 'levels', NORMAL, AOD, ui.show_level ? 'sys' : 'fallback')
 
     if (isAod) {
       safe('buildAod', buildAod)
