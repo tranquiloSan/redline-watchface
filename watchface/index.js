@@ -12,7 +12,7 @@
  * otherwise it creates the normal layer plus the AOD layer, so either way the
  * system has an always-on version to show.
  */
-import ui from '@zos/ui'
+import * as ui from '@zos/ui'
 import { getScene, SCENE_AOD } from '@zos/app'
 import { Time, Battery, Step } from '@zos/sensor'
 import { log as zlog } from '@zos/utils'
@@ -254,7 +254,7 @@ function buildNormal() {
 WatchFace({
   build() {
     isAod = getScene() === SCENE_AOD
-    log('build, aod =', isAod, 'levels', NORMAL, AOD)
+    log('build, aod =', isAod, 'levels', NORMAL, AOD, ui.show_level ? 'sys' : 'fallback')
 
     if (isAod) {
       safe('buildAod', buildAod)

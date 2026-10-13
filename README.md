@@ -70,5 +70,5 @@ Positions are in `watchface/index.js`. If you move something there, update `tool
 
 ## Known unknowns (check on first install)
 - **TEMP gauge**: the ends show today's low (blue) and high (red). The needle is the system weather pointer, which seems to place the current temperature between those two. If the needle doesn't match where the number sits between low and high, that guess is wrong.
-- **Always-on**: set the watch to *Display → Always-on display → Follow watch face*. If it still shows another face, open the Zepp app's Developer Mode → log viewer and look for `[redline]` lines (they show whether build ran in AOD and any errors).
+- **Always-on**: `app.json → module.watchface.lockscreen` must be `1`. The English docs call it "Lock screen", but the Chinese docs say 息屏显示 (always-on display). With `0` the watch ignores the face's always-on layer and shows a system face instead. Also set the watch to *Display → Always-on display → Follow watch face*. If it still shows another face, open the Zepp app's Developer Mode → log viewer and look for `[redline]` lines (they show whether build ran in AOD and any errors).
 - **appId**: if `zeus preview` complains about the app ID, create a watch face in the Zepp developer console (https://console.zepp.com) and paste its ID into `app.json → app.appId`.
