@@ -21,11 +21,9 @@ if not aod:
     paste(c,'fuel/'+str(round(bat/5)),80,190)
     rot(c,'mini_needle',5,40,128,238,-110+220*bat/100)
     textimg(c,str(bat),'small',88,264,80,unit='small/percent')
-    from PIL import ImageDraw
-    ta=lambda t:-110+220*max(0,min(1,(t+10)/45))
-    lo,hi=9,17  # sample forecast low/high
-    ImageDraw.Draw(c).arc((338-36,238-36,338+36,238+36),ta(lo)-90,ta(hi)-90,fill=(255,176,32,255),width=5)
-    rot(c,'mini_needle',5,40,338,238,ta(temp))
+    lo,hi=9,17  # sample forecast low/high; needle = position of temp within lo..hi
+    textimg(c,str(lo),'tiny_c',338-58,250,36); textimg(c,str(hi),'tiny_h',338+22,250,36)
+    rot(c,'mini_needle',5,40,338,238,-110+220*max(0,min(1,(temp-lo)/(hi-lo))))
     textimg(c,str(temp),'small',298,264,80,unit='small/deg')
     paste(c,'lights/'+str(s//10+1),148,130)
     for i,ch in enumerate(str(steps).zfill(6)): paste(c,('odo_last/' if i==5 else 'odo/')+ch,233-65+i*22,364)

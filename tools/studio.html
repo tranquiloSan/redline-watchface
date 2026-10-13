@@ -57,7 +57,7 @@ function dial(aod){
       return s;
     };
     b+=g(...GAUGES.fuel,'E','F','FUEL',[]);
-    b+=g(...GAUGES.temp,'C','H','TEMP',[],['#3d8bff',COL.redTxt]);
+    b+=g(...GAUGES.temp,'','','TEMP',[]); // ends: live low/high numbers
     // shift light sockets
     for(let i=0;i<6;i++) b+=`<circle cx="${C-65+i*26}" cy="142" r="7.5" fill="#1c1e22" stroke="#2c2f34" stroke-width="1"/>`;
     // odometer boxes
@@ -120,6 +120,11 @@ for(let d=0;d<10;d++){
   R[`small/${d}`]=()=>glyph(13,26,d,{size:24,weight:700,fill:'#fff',base:21});
   R[`amber/${d}`]=()=>glyph(14,28,d,{size:26,weight:600,fill:COL.amber,base:23});
 }
+[['tiny_c','#4a9bff'],['tiny_h',COL.redTxt]].forEach(([k,c])=>{
+  for(let d=0;d<10;d++) R[`${k}/${d}`]=()=>glyph(9,16,d,{size:16,weight:700,fill:c,base:14});
+  R[`${k}/minus`]=()=>glyph(6,16,'-',{size:16,weight:700,fill:c,base:14});
+  R[`${k}/none`]=()=>glyph(12,16,'--',{size:16,weight:700,fill:c,base:14});
+});
 R['small/percent']=()=>glyph(14,26,'%',{size:21,weight:700,fill:'#fff',base:21});
 R['small/deg']=()=>glyph(9,26,'°',{size:24,weight:700,fill:'#fff',base:21});
 R['small/minus']=()=>glyph(9,26,'-',{size:24,weight:700,fill:'#fff',base:21});

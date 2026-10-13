@@ -10,7 +10,7 @@ This is a custom watch face for the **Amazfit Active 3 Premium** (466×466 round
 | GEAR box | Hour (24h) |
 | Shift lights | One light per 10 s of the current minute. All six flash in the last 3 s. |
 | FUEL gauge | Battery %. The gauge turns red below 20 %. |
-| TEMP gauge | Needle = current temperature (-10…35 °C), amber band = today's low→high |
+| TEMP gauge | Current temperature; the ends show today's low/high and the needle shows where now sits between them |
 | ODO | Steps today |
 | Bottom line | Day, date, month and heart rate |
 
@@ -69,6 +69,6 @@ python tools/preview.py docs/preview_aod.png aod
 Positions are in `watchface/index.js`. If you move something there, update `tools/preview.py` to match.
 
 ## Known unknowns (check on first install)
-- **TEMP gauge**: the needle shows the current temperature on a -10…35 °C scale, and the amber band shows today's low→high from the forecast. The needle reads back the system temperature number. If that read isn't allowed on your firmware, the needle hides and only the band and number stay.
-- **Always-on**: the needle and gear update once a minute through `Time.onPerMinute`. If they freeze in always-on mode on your firmware, that's the thing to report.
+- **TEMP gauge**: the ends show today's low (blue) and high (red). The needle is the system weather pointer, which seems to place the current temperature between those two. If the needle doesn't match where the number sits between low and high, that guess is wrong.
+- **Always-on**: set the watch to *Display → Always-on display → Follow watch face*. If it still shows another face, open the Zepp app's Developer Mode → log viewer and look for `[redline]` lines (they show whether build ran in AOD and any errors).
 - **appId**: if `zeus preview` complains about the app ID, create a watch face in the Zepp developer console (https://console.zepp.com) and paste its ID into `app.json → app.appId`.
