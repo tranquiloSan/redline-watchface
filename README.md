@@ -11,6 +11,8 @@ This is a custom watch face for the **Amazfit Active 3 Premium** (466×466 round
 | Shift lights | One light per 10 s of the current minute. All six flash in the last 3 s. |
 | FUEL gauge | Battery %. The gauge turns red below 20 %. |
 | TEMP gauge | Current temperature; the ends show today's low/high and the needle shows where now sits between them |
+| Warning lamps | Alarm set, stopwatch running or paused, timer running |
+| Line above the shift lights | Next alarm time while an alarm is set (otherwise "× 10 MIN · RPH") |
 | ODO | Steps today |
 | Bottom line | Day, date, month and heart rate |
 

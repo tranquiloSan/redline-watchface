@@ -16,7 +16,7 @@ const pt=(cx,cy,r,deg)=>{const a=deg*Math.PI/180;return [cx+r*Math.sin(a),cy-r*M
 const arc=(cx,cy,r,a0,a1)=>{const [x0,y0]=pt(cx,cy,r,a0),[x1,y1]=pt(cx,cy,r,a1);return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;};
 const ang=v=>A0+SWEEP*v/60;
 const GAUGES={fuel:[128,238],temp:[338,238]}, GR=34, GA0=-110, GA1=110;
-const COL={needle:'#ff5a1f',red:'#e5202e',redTxt:'#ff3b47',amber:'#ffb020',green:'#3ddc84',muted:'#8b9099',track:'#3a3d42',white:'#ffffff'};
+const COL={needle:'#ff5a1f',red:'#e5202e',redTxt:'#ff3b47',amber:'#ffb020',green:'#3ddc84',muted:'#8b9099',track:'#3a3d42',white:'#ffffff',lampOff:'#2a2d33',blue:'#4a9bff'};
 const svg=(w,h,body,defs='')=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs>${defs}</defs>${body}</svg>`;
 const glow=`<filter id="glow" x="-80%" y="-20%" width="260%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
 const ledGlow=`<filter id="lg" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
@@ -60,6 +60,8 @@ function dial(aod){
     b+=g(...GAUGES.temp,'','','TEMP',[[0,.25,'#3d8bff'],[.8,1,COL.red]]); // ends: live low/high numbers
     // shift light sockets
     for(let i=0;i<6;i++) b+=`<circle cx="${C-65+i*26}" cy="142" r="7.5" fill="#1c1e22" stroke="#2c2f34" stroke-width="1"/>`;
+    // warning lamps (unlit); lit versions are overlaid by the watchface
+    LAMPS.forEach(([k,fn],i)=>b+=fn(LAMP_X[i],LAMP_Y,24,COL.lampOff));
     // odometer boxes
     const x0=C-(6*22-2)/2, y0=364;
     for(let i=0;i<6;i++) b+=`<rect x="${x0+i*22}" y="${y0}" width="20" height="28" rx="3" fill="${i===5?'#e9eaec':'#1b1d21'}" stroke="#2e3137"/>`;
@@ -73,6 +75,22 @@ function dial(aod){
 function heart(x,y,s,c){ // top-left x,y, size s
   const k=s/24;
   return `<path transform="translate(${x} ${y}) scale(${k})" d="M12 21s-7.5-4.6-10-9.3C.4 8.5 2.2 4.5 6 4.5c2.2 0 3.6 1.2 4.5 2.6h3C14.4 5.7 15.8 4.5 18 4.5c3.8 0 5.6 4 4 7.2C19.5 16.4 12 21 12 21z" fill="${c}"/>`;
+}
+
+// ---------- warning lamps: alarm (amber), stopwatch (green), timer (blue) ----------
+const LAMP_X=[193,233,273], LAMP_Y=186;
+const at=(cx,cy,s,body)=>`<g transform="translate(${cx-s/2} ${cy-s/2}) scale(${s/24})">${body}</g>`;
+const bell=(cx,cy,s,c)=>at(cx,cy,s,`<path d="M12 2.5a6.5 6.5 0 0 0-6.5 6.5v4.2L3.2 17h17.6l-2.3-3.8V9A6.5 6.5 0 0 0 12 2.5z" fill="${c}"/><circle cx="12" cy="20" r="2.4" fill="${c}"/>`);
+const stopwatch=(cx,cy,s,c)=>at(cx,cy,s,`<rect x="9.5" y="1" width="5" height="3" rx="1" fill="${c}"/><circle cx="12" cy="14" r="8" fill="none" stroke="${c}" stroke-width="2.6"/><path d="M12 14V9.5" stroke="${c}" stroke-width="2.6" stroke-linecap="round"/>`);
+const hourglass=(cx,cy,s,c)=>at(cx,cy,s,`<path d="M5 2h14v2.5c0 3-3.2 5.6-5 7.5 1.8 1.9 5 4.5 5 7.5V22H5v-2.5c0-3 3.2-5.6 5-7.5C8.2 10.1 5 7.5 5 4.5z" fill="${c}"/>`);
+const LAMPS=[['alarm',bell,COL.amber],['stopwatch',stopwatch,COL.green],['timer',hourglass,COL.blue]];
+function litLamp(fn,c){ // 40x40, icon centred
+  return svg(40,40,`<g filter="url(#lg)">${fn(20,20,24,c)}</g>`,ledGlow);
+}
+// Covers the "× 10 MIN · RPH" label while an alarm is set (150..316 x 98..126 of the dial)
+function alarmPatch(){
+  return svg(166,28,`<rect width="166" height="28" fill="url(#pg)"/>`,
+    `<radialGradient id="pg" gradientUnits="userSpaceOnUse" cx="${C-150}" cy="${C-98}" r="233"><stop offset="0%" stop-color="#15171a"/><stop offset="100%" stop-color="#000"/></radialGradient>`);
 }
 
 // ---------- needles ----------
@@ -125,6 +143,11 @@ for(let d=0;d<10;d++){
   R[`${k}/minus`]=()=>glyph(6,16,'-',{size:16,weight:700,fill:c,base:14});
   R[`${k}/none`]=()=>glyph(12,16,'--',{size:16,weight:700,fill:c,base:14});
 });
+LAMPS.forEach(([k,fn,c])=>R[`lamp/${k}`]=()=>litLamp(fn,c));
+R['lamp/none']=()=>svg(40,40,'');
+for(let d=0;d<10;d++) R[`blank/${d}`]=()=>svg(1,40,''); // invisible digits: TEXT_IMG draws only its unit (a lamp)
+R['alarm_patch']=alarmPatch;
+R['small/colon']=()=>glyph(7,26,':',{size:24,weight:700,fill:'#fff',base:20});
 R['small/percent']=()=>glyph(14,26,'%',{size:21,weight:700,fill:'#fff',base:21});
 R['small/deg']=()=>glyph(9,26,'°',{size:24,weight:700,fill:'#fff',base:21});
 R['small/minus']=()=>glyph(9,26,'-',{size:24,weight:700,fill:'#fff',base:21});

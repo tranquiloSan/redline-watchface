@@ -7,6 +7,8 @@
  *   GEAR box  = hour        Shift lights = one LED per 10 s of the minute
  *   FUEL      = battery     TEMP         = current temp within today's low…high
  *   ODO       = steps       bottom line  = date + heart rate
+ *   Warning lamps = alarm set / stopwatch holds a time / timer running.
+ *   While an alarm is set its time replaces the RPH label.
  *
  * If build() runs in the always-on (AOD) scene it creates only the AOD layer;
  * otherwise it creates the normal layer plus the AOD layer, so either way the
@@ -25,6 +27,8 @@ const FUEL = { x: 128, y: 238 }
 const TEMP = { x: 338, y: 238 }
 const MINI_START = -110
 const MINI_END = 110
+const LAMP_X = [193, 233, 273] // centres; lamp images are 40×40
+const LAMP_Y = 186
 
 // show_level constants (fall back to the documented bit values if missing)
 const SL = ui.show_level || {}
@@ -180,6 +184,30 @@ function buildGear(o, level) {
   o.gear1 = create(ui.widget.IMG, { x: C, y: 298, src: img('gear/0'), show_level: level })
 }
 
+// Warning lamps. The unlit icons are part of bg. The alarm lamp uses the
+// system alarm status. Stopwatch and timer have no status, so their lamps are
+// bound to the value instead.
+function buildLamps(L) {
+  const at = (i) => ({ x: LAMP_X[i] - 20, y: LAMP_Y - 20 })
+  create(ui.widget.IMG_STATUS, { ...at(0), src: img('lamp/alarm'), type: ui.system_status.CLOCK, show_level: L })
+  const lit = (name) => Array.from({ length: 100 }, (_, i) => img(i ? 'lamp/' + name : 'lamp/none'))
+  // IMG_LEVEL ignores STOP_WATCH, so the stopwatch lamp is a TEXT_IMG with
+  // invisible digits and the lit lamp as its unit: it shows while the stopwatch
+  // holds a time (running or paused) and disappears once it is reset.
+  const sw = img('lamp/stopwatch')
+  create(ui.widget.TEXT_IMG, {
+    x: LAMP_X[1] + 20 - 60, y: LAMP_Y - 20, w: 60, h: 40,
+    font_array: digits('blank'), type: ui.data_type.STOP_WATCH,
+    unit_en: sw, unit_sc: sw, unit_tc: sw, invalid_image: img('blank/0'),
+    h_space: 0, align_h: ui.align.RIGHT, show_level: L,
+  })
+  // timer: frame 0 is empty, every other frame is the lit lamp
+  create(ui.widget.IMG_LEVEL, {
+    ...at(2), image_array: lit('timer'), image_length: 100,
+    type: ui.data_type.COUNT_DOWN, show_level: L,
+  })
+}
+
 function buildAod() {
   create(ui.widget.IMG, { x: 0, y: 0, src: img('bg_aod'), show_level: AOD })
   buildGear(wa, AOD)
@@ -230,6 +258,19 @@ function buildNormal() {
     h_space: 1, align_h: ui.align.CENTER_H, show_level: L,
   })
 
+  // Alarm message line: while an alarm is set, a patch hides the RPH label and
+  // the next alarm time is drawn over it.
+  create(ui.widget.IMG_STATUS, {
+    x: 150, y: 98, src: img('alarm_patch'),
+    type: ui.system_status.CLOCK, show_level: L,
+  })
+  create(ui.widget.TEXT_IMG, {
+    x: 150, y: 99, w: 166, h: 26,
+    font_array: digits('small'), type: ui.data_type.ALARM_CLOCK,
+    dot_image: img('small/colon'), invalid_image: img('lamp/none'),
+    h_space: 1, align_h: ui.align.CENTER_H, show_level: L,
+  })
+
   // shift lights
   w.lights = create(ui.widget.IMG, { x: 148, y: 130, src: img('lights/0'), show_level: L })
 
@@ -245,6 +286,7 @@ function buildNormal() {
   }
 
   buildDateLine(w, L, 120, true)
+  buildLamps(L)
 
   // main needle + hub on top
   w.needle = rotatingImg(img('needle'), 14, 210, C, C, L)
