@@ -1,7 +1,7 @@
 {
   "configVersion": "v3",
   "app": {
-    "appId": 1048213,
+    "appId": 1131097,
     "appName": "Redline",
     "appType": "watchface",
     "version": { "code": 1, "name": "1.0.0" },
